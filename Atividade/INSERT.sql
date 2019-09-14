@@ -4,12 +4,16 @@ Insert into Disciplinas VALUES(1 , 2, 'Matematica');
 Insert into Disciplinas VALUES(2 , 2, 'MatematicaII');
 INSERT INTO Pre_Requisitos VALUES(2, 1);
 
-INSERT INTO Cursos VALUES (1, 120, 'MATEMATICA COMPUTACIONAL', NULL);
+INSERT INTO Cursos VALUES (1, 120, 'Matematica Computacional', NULL);
+INSERT INTO Cursos VALUES (3, 120, 'Portugues', NULL);
 
 INSERT INTO Professores(COD_CURSO, COD_PROF, NOM_PROF) VALUES(1, 1, 'JEAN');
 INSERT INTO Professores(COD_CURSO, COD_PROF, NOM_PROF) VALUES(1, 2, 'JOAO');
+INSERT INTO Professores(COD_CURSO, COD_PROF, NOM_PROF) VALUES(3, 4, 'Pedro');
 
-UPDATE Cursos SET COD_COORD = 1 WHERE COD_CURSO = 1;
+UPDATE Cursos SET COD_COORD = 1 WHERE COD_CURSO = 2;
+
+UPDATE Cursos SET COD_COORD = 4 WHERE COD_CURSO = 1; -- Tem Que Gerar um Erro
 
 INSERT INTO Alunos(MAT_ALU, NOM_ALU, COD_CURSO, DAT_NASC, MGP, TOT_CRED )
     VALUES (1234, 'Henrique', 1, '12-02-2003', 0, 0)
