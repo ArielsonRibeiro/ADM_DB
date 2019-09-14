@@ -1,0 +1,42 @@
+Trigres
+
+Tabela Virtuais:
+	Inserted -> O valor que está sendo inserido
+	deleted  -> O valor que está sendo deletado
+		Os Campos destas tabelas são o mesmos da tabela
+
+if update(coluna_a_vigiar)
+begin
+...
+	VALUES(
+		  (select coluna from deleted)
+		, (select coluna from deleted)
+		, (select coluna from inserted)
+		, inserted.coluna
+		, inserted.coluna
+);
+
+end
+
+RAISERROR(message, 10 --gravida, 1 --estado)
+
+ROLLBACK -- Impedi que haja alteração (Para a tigre e alteração)
+
+
+
+
+CREATE TRIGGER TGR_VENDAS_AI
+ON VENDAS
+FOR INSERT
+AS
+BEGIN
+    DECLARE
+    @VALOR  DECIMAL(10,2),
+    @DATA   DATETIME
+ 
+    SELECT @DATA = DATA, @VALOR = VALOR FROM INSERTED
+ 
+    UPDATE CAIXA SET SALDO_FINAL = SALDO_FINAL + @VALOR
+    WHERE DATA = @DATA
+END
+GO
