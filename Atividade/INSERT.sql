@@ -1,3 +1,5 @@
+Use SIGAA;
+
 Insert into Disciplinas VALUES(1 , 2, 'Matematica');
 Insert into Disciplinas VALUES(2 , 2, 'MatematicaII');
 INSERT INTO Pre_Requisitos VALUES(2, 1);
@@ -79,3 +81,5 @@ SELECT * FROM Curriculos
 SELECT * FROM Historicos_Escolares
 SELECT * FROM Turmas
 SELECT * FROM Tumas_Matriculadas
+
+USE Curso;
