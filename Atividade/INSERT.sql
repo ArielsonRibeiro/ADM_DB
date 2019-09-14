@@ -2,18 +2,24 @@ Use SIGAA;
 
 Insert into Disciplinas VALUES(1 , 2, 'Matematica');
 Insert into Disciplinas VALUES(2 , 2, 'MatematicaII');
+
+
 INSERT INTO Pre_Requisitos VALUES(2, 1);
 
 INSERT INTO Cursos VALUES (1, 120, 'Matematica Computacional', NULL);
-INSERT INTO Cursos VALUES (3, 120, 'Portugues', NULL);
+INSERT INTO Cursos VALUES (2, 120, 'Matematica Computacional', NULL);
+INSERT INTO Cursos VALUES (3, 120, 'Matematica Computacional', NULL);
+INSERT INTO Cursos VALUES (4, 120, 'Portugues', NULL);
 
 INSERT INTO Professores(COD_CURSO, COD_PROF, NOM_PROF) VALUES(1, 1, 'JEAN');
 INSERT INTO Professores(COD_CURSO, COD_PROF, NOM_PROF) VALUES(1, 2, 'JOAO');
 INSERT INTO Professores(COD_CURSO, COD_PROF, NOM_PROF) VALUES(3, 4, 'Pedro');
+INSERT INTO Professores(COD_CURSO, COD_PROF, NOM_PROF) VALUES(3, 5, 'Lauro');
+
 
 UPDATE Cursos SET COD_COORD = 1 WHERE COD_CURSO = 2;
 
-UPDATE Cursos SET COD_COORD = 4 WHERE COD_CURSO = 1; -- Tem Que Gerar um Erro
+UPDATE Cursos SET COD_COORD = 4 WHERE COD_CURSO = 1; -- Tem Que Gerar um Erro(trigger)
 
 INSERT INTO Alunos(MAT_ALU, NOM_ALU, COD_CURSO, DAT_NASC, MGP, TOT_CRED )
     VALUES (1234, 'Henrique', 1, '12-02-2003', 0, 0)
@@ -62,6 +68,14 @@ INSERT INTO Turmas(ANO
 , VAG_OCUP
 , COD_PROF) VALUES(2019, 1, 1, 'MA2', 20, 10, 1)
 
+INSERT INTO Turmas(ANO
+, SEMESTRE
+, COD_DISC
+, TURMA   
+, TOT_VAGAS
+, VAG_OCUP
+, COD_PROF) VALUES(2019, 2, 1, 'MA3', 20, 10, 1)
+
 
 INSERT INTO Tumas_Matriculadas(ANO 
 , SEMESTRE
@@ -69,11 +83,34 @@ INSERT INTO Tumas_Matriculadas(ANO
 , TURMA
 , MAT_ALU) VALUES(2019, 1, 1, 'MA1', 1234)
 
+
 INSERT INTO Tumas_Matriculadas(ANO 
 , SEMESTRE
 , COD_DISC
 , TURMA
-, MAT_ALU) VALUES(2019, 1, 2, 'MA2', 1234)
+, MAT_ALU) VALUES(2019, 2, 1, 'MA3', 1234)
+
+INSERT INTO Tumas_Matriculadas(ANO 
+, SEMESTRE
+, COD_DISC
+, TURMA
+, MAT_ALU) VALUES(2019, 1, 1, 'MA2', 1234)
+
+DELETE FROM Tumas_Matriculadas
+
+
+Insert into Disciplinas VALUES(3 , 5, 'MatematicaIII');
+
+Insert into Disciplinas VALUES(4 , 5, 'português I');
+
+UPDATE Disciplinas SET QTD_CRED = 5
+     WHERE COD_DISC =3
+UPDATE Disciplinas SET QTD_CRED = 5
+     WHERE COD_DISC =2 -- tem que gerar erro (trigger)
+
+UPDATE Disciplinas SET NOM_DISC = 'mat1'
+     WHERE COD_DISC =1 -- tem que gerar erro (trigger)
+
 
 
 SELECT * FROM Disciplinas
