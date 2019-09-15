@@ -220,21 +220,32 @@ GO
 
 -- 14. O total de créditos cursados e a mgp do aluno deve ser modificado automaticamente pela
 -- alteração do histórico do aluno;
-    -- MAT_ALU     INT    NOT NULL CHECK (MAT_ALU > 0)
-    -- , COD_CURSO TINYINT    NOT NULL --CHECK (COD_CURSO > 0)
-    -- , DAT_NASC  DATE         NOT NULL
-    -- , TOT_CRED  INT    NOT NULL
-    -- , MGP       NUMERIC(4, 2) NOT NULL
-    -- , NOM_ALU   VARCHAR(60)  NOT NULL
 CREATE TRIGGER TG_ALUNO_MGP ON [Historicos_Escolares]
-FOR UPDATE
+FOR UPDATE, INSERT
 AS
     BEGIN
         DECLARE 
               @MAT_ALU INT
             , @TOT_CRED  INT
-            , @MGP NUMERIC(4, 2);
-            SELECT @MAT_ALU = @MAT_ALU FROM [Historicos_Escolares];
+            , @MGP NUMERIC(4, 2)
+            , @I INT;
+            SELECT @MAT_ALU = MAT_ALU FROM deleted;
+
+            SELECT @TOT_CRED = SUM(d.QTD_CRED) FROM Historicos_Escolares he
+                RIGHT JOIN Disciplinas d ON d.COD_DISC = he.COD_DISC
+                WHERE he.MAT_ALU = @MAT_ALU AND he.SITUACAO = 'AP';
+
+            SELECT @MGP = SUM(he.MEDIA)
+                ,  @I = COUNT(*)
+                FROM  Historicos_Escolares he WHERE MAT_ALU = @MAT_ALU;
+
+            SELECT @MGP = @MGP/@I;
+            PRINT @MGP
+            PRINT @TOT_CRED
+            UPDATE Alunos
+                SET TOT_CRED = @TOT_CRED
+                    , MGP = @MGP
+                WHERE MAT_ALU = @MAT_ALU;    
         
     END
 GO
@@ -242,3 +253,28 @@ GO
 
 -- 15. O aluno só pode ser modificado de curso se não possuir históricos ou matrículas em
 -- disciplinas;
+
+CREATE TRIGGER TG_UPDATE_ALUNO ON [Alunos]
+FOR UPDATE
+AS
+    IF(UPDATE(COD_CURSO))
+    BEGIN
+        DECLARE 
+            @MAT_ALU INT;
+        SELECT @MAT_ALU = MAT_ALU FROM deleted;
+
+        IF ( (SELECT COUNT(*) FROM SIGAA.dbo.[Historicos_Escolares] WHERE MAT_ALU = @MAT_ALU) > 0
+            OR (SELECT COUNT(*) FROM SIGAA.dbo.[Tumas_Matriculadas] WHERE MAT_ALU = @MAT_ALU) > 0 )
+            BEGIN
+                RAISERROR('O ALUNO JÁ POSSUI HISTÓRICO ESCOLAR OU JÁ ESTÁ MATRICULADO,
+                     COM ISSO NÃO É POSSÍVEL REALIZAR ESSA OPERAÇÃO', 10 , 1 )
+                ROLLBACK;
+            END
+    END
+GO
+
+-- 16. A idade mínima para alunos é de 16 anos. CHECK
+
+-- 17. Um aluno não pode realizar matrícula em uma disciplina para a qual não possua o pré-
+-- requisito;
+

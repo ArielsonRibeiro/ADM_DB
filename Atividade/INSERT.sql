@@ -111,7 +111,7 @@ UPDATE Disciplinas SET QTD_CRED = 5
 UPDATE Disciplinas SET NOM_DISC = 'mat1'
      WHERE COD_DISC =1 -- tem que gerar erro (trigger)
 
-
+UPDATE Alunos SET NOM_ALU = 'PEDR52' WHERE MAT_ALU = 1234;
 
 SELECT * FROM Disciplinas
 SELECT * FROM Pre_Requisitos
