@@ -277,4 +277,27 @@ GO
 
 -- 17. Um aluno não pode realizar matrícula em uma disciplina para a qual não possua o pré-
 -- requisito;
+CREATE TRIGGER TG_CALIDAR_REQUISITO_DISCIPLINA ON [Tumas_Matriculadas]
+FOR INSERT
+AS
+    BEGIN
+    DECLARE
+        @COD_DISC INT
+        , @CONT1 INT
+        , @CONT2 INT;
+    SELECT @COD_DISC = COD_DISC FROM inserted;
 
+    SELECT @CONT1 = COUNT(*) FROM [Pre_Requisitos] WHERE COD_DISC = @COD_DISC;
+
+    SELECT @CONT2 = COUNT(he.COD_DISC) FROM [Historicos_Escolares] he
+    INNER JOIN (SELECT * FROM [Pre_Requisitos]
+                    WHERE COD_DISC = @COD_DISC) pr    
+        ON he.COD_DISC = pr.COD_DISC;
+
+    IF  (@CONT1 != @CONT2)
+        BEGIN
+            RAISERROR('O ALUNO NÃO POSSUI OS PRÉ-REQUISITOS SUFICIENTE PARA CURSAR ESTA MATERIA', 10 , 1 );
+            ROLLBACK;
+        END
+    END
+GO
