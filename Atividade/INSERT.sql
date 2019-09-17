@@ -66,35 +66,28 @@ INSERT INTO Turmas(ANO
 , TURMA   
 , TOT_VAGAS
 , VAG_OCUP
-, COD_PROF) VALUES(2019, 1, 1, 'MA2', 20, 10, 1)
+, COD_PROF) VALUES(2019, 1, 2, 'MA2', 20, 10, 1)
 
-INSERT INTO Turmas(ANO
-, SEMESTRE
-, COD_DISC
-, TURMA   
-, TOT_VAGAS
-, VAG_OCUP
-, COD_PROF) VALUES(2019, 2, 1, 'MA3', 20, 10, 1)
 
 
 INSERT INTO Tumas_Matriculadas(ANO 
 , SEMESTRE
 , COD_DISC
 , TURMA
-, MAT_ALU) VALUES(2019, 1, 1, 'MA1', 1234)
+, MAT_ALU) VALUES(2019, 1, 2, 'MA1', 1234)
 
 
 INSERT INTO Tumas_Matriculadas(ANO 
 , SEMESTRE
 , COD_DISC
 , TURMA
-, MAT_ALU) VALUES(2019, 2, 1, 'MA3', 1234)
+, MAT_ALU) VALUES(2019, 2, 1, 'MA4', 1234)
 
 INSERT INTO Tumas_Matriculadas(ANO 
-, SEMESTRE
-, COD_DISC
-, TURMA
-, MAT_ALU) VALUES(2019, 1, 1, 'MA2', 1234)
+    , SEMESTRE
+    , COD_DISC
+    , TURMA
+    , MAT_ALU) VALUES(2019, 1, 2, 'MA2', 1234) -- tem que dar erro de trigger;
 
 DELETE FROM Tumas_Matriculadas
 
@@ -102,6 +95,16 @@ DELETE FROM Tumas_Matriculadas
 Insert into Disciplinas VALUES(3 , 5, 'MatematicaIII');
 
 Insert into Disciplinas VALUES(4 , 5, 'português I');
+
+INSERT Curriculos VALUES(2, 4, 1)
+
+INSERT INTO Turmas(ANO
+, SEMESTRE
+, COD_DISC
+, TURMA   
+, TOT_VAGAS
+, VAG_OCUP
+, COD_PROF) VALUES(2019, 1, 4, 'MA2', 20, 0, 1)
 
 UPDATE Disciplinas SET QTD_CRED = 5
      WHERE COD_DISC =3
@@ -112,6 +115,19 @@ UPDATE Disciplinas SET NOM_DISC = 'mat1'
      WHERE COD_DISC =1 -- tem que gerar erro (trigger)
 
 UPDATE Alunos SET NOM_ALU = 'PEDR52' WHERE MAT_ALU = 1234;
+
+
+UPDATE Historicos_Escolares SET MEDIA = 7 WHERE MAT_ALU = 1234;
+
+delete Tumas_Matriculadas
+
+INSERT INTO Tumas_Matriculadas(ANO 
+, SEMESTRE
+, COD_DISC
+, TURMA
+, MAT_ALU) VALUES(2019, 1, 4, 'MA2', 1234)
+
+
 
 SELECT * FROM Disciplinas
 SELECT * FROM Pre_Requisitos

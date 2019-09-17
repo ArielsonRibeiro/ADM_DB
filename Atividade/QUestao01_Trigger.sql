@@ -277,7 +277,7 @@ GO
 
 -- 17. Um aluno não pode realizar matrícula em uma disciplina para a qual não possua o pré-
 -- requisito;
-CREATE TRIGGER TG_CALIDAR_REQUISITO_DISCIPLINA ON [Tumas_Matriculadas]
+CREATE TRIGGER TG_VALIDAR_REQUISITO_DISCIPLINA ON [Tumas_Matriculadas]
 FOR INSERT
 AS
     BEGIN
@@ -292,7 +292,8 @@ AS
     SELECT @CONT2 = COUNT(he.COD_DISC) FROM [Historicos_Escolares] he
     INNER JOIN (SELECT * FROM [Pre_Requisitos]
                     WHERE COD_DISC = @COD_DISC) pr    
-        ON he.COD_DISC = pr.COD_DISC;
+        ON he.COD_DISC = pr.COD_DISC
+        WHERE UPPER(he.SITUACAO) = 'AP';
 
     IF  (@CONT1 != @CONT2)
         BEGIN
@@ -301,3 +302,59 @@ AS
         END
     END
 GO
+
+-- 18. A matrícula em disciplinas já cursadas (aprovadas) não pode ser feita;
+CREATE TRIGGER TG_VALIDAR_DISCIPLINA_JA_CURSADA ON [Tumas_Matriculadas]
+FOR INSERT
+AS
+    BEGIN
+    DECLARE
+        @COD_DISC INT
+        , @MAT_ALU INT;
+    SELECT @COD_DISC = COD_DISC
+            , @MAT_ALU = MAT_ALU
+    FROM inserted;
+
+
+    IF(EXISTS (SELECT * FROM [Historicos_Escolares] WHERE COD_DISC = @COD_DISC AND MAT_ALU = MAT_ALU AND SITUACAO = 'AP'))
+        BEGIN
+        RAISERROR('O ALUNO JÀ CURSOU A DISCIPLINA', 10 , 1 );
+            ROLLBACK;
+        END
+
+    END
+GO
+
+
+-- 19. O aluno só pode efetuar matrículas em disciplinas que pertençam ao seu currículo;
+
+CREATE TRIGGER TG_VALIDAR_DISCIPLINA_PERTENCE_AO_CURSO_DO_ALUNO ON [Tumas_Matriculadas]
+FOR INSERT
+AS
+    BEGIN
+    DECLARE
+        @COD_DISC INT
+        , @MAT_ALU INT
+        , @CURSO_DISC INT
+        , @CURSO_ALU INT;
+    SELECT @COD_DISC = COD_DISC
+            , @MAT_ALU = MAT_ALU
+    FROM inserted;
+    
+    SELECT @CURSO_DISC = COD_CURSO FROM Curriculos WHERE COD_DISC = @COD_DISC;
+    SELECT @CURSO_ALU = COD_CURSO FROM Alunos WHERE MAT_ALU = @MAT_ALU;
+    
+
+    IF(@CURSO_ALU != @CURSO_DISC)
+        BEGIN
+        RAISERROR('ESTÁ DISCIPLINA NÂO PERTENCE AO CURRICULO DO CURSO DO ALUNO!', 10 , 1 );
+            ROLLBACK;
+        END
+
+    END
+GO
+
+
+-- 20. O limite máximo de créditos matriculados em um mesmo período é dado pelo período de
+-- maior quantidade de créditos do curso;
+-- 21. Sequencialmente, o aluno só pode ter uma nota com o valor nulo, ou seja, a nota
