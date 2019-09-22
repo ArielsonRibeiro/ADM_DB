@@ -221,6 +221,8 @@ GO
 -- nenhuma inconsistência em relação aos currículos cadastrados, os históricos dos alunos e as
 -- disciplinas matriculadas.
 
+    
+
 
 -- 14. O total de créditos cursados e a mgp do aluno deve ser modificado automaticamente pela
 -- alteração do histórico do aluno;
@@ -243,8 +245,12 @@ AS
                 ,  @I = COUNT(*)
                 FROM  Historicos_Escolares he WHERE MAT_ALU = @MAT_ALU;
 
-            SELECT @MGP = @MGP/@I;
-
+            IF(@MGP IS NOT NULL OR @MGP != 0 )
+                SELECT @MGP = @MGP/@I;
+            ELSE
+                SET @MGP = 0  
+            IF(@TOT_CRED IS NULL )
+                SET @TOT_CRED = 0 ;  
             UPDATE Alunos
                 SET TOT_CRED = @TOT_CRED
                     , MGP = @MGP
@@ -456,7 +462,39 @@ AS
     
 GO
 -- 23. O valor das faltas em uma unidade não pode exceder a 1/3 do total de aulas da disciplina;
+CREATE TRIGGER TG_VALIDAR_FALTAS_POR_UNIDADE ON [Tumas_Matriculadas]
+FOR INSERT, UPDATE
+AS
+    BEGIN
+    DECLARE
+        @COD_DISC INT
+        , @TOT_CRED INT
+        , @FALTAS_1 INT
+        , @FALTAS_2 INT
+        , @FALTAS_3 INT
+        , @UM_TERCO_TOTAL_AULAS NUMERIC(3, 1);
 
+    SELECT @COD_DISC = COD_DISC
+        , @FALTAS_1 = FALTAS_1
+        , @FALTAS_2 = FALTAS_2
+        , @FALTAS_3 = FALTAS_3
+        FROM inserted;
+
+    SELECT @TOT_CRED = QTD_CRED FROM Disciplinas 
+        WHERE COD_DISC = @COD_DISC;
+    
+    SET @UM_TERCO_TOTAL_AULAS = (@TOT_CRED *18)/3;
+    
+    
+
+    IF(@UM_TERCO_TOTAL_AULAS < @FALTAS_1 OR @UM_TERCO_TOTAL_AULAS < @FALTAS_2 OR @UM_TERCO_TOTAL_AULAS < @FALTAS_2)
+        BEGIN
+        RAISERROR('NÃO É POSSÍVEL ESTA QUANTIDADE DE FALTAS POR UNIDADE(APENAS 1/3 DO TOTAL É PERMITIDO', 10 , 1 );
+            ROLLBACK;
+        END
+
+    END
+GO
 
 -- 24. A quarta nota só pode ser preenchida se uma das anteriores estiver nula;
 
@@ -562,16 +600,82 @@ AS
 GO
 
 -- 28. O total de faltas do histórico não pode exceder ao total de aulas da disciplina;
+CREATE TRIGGER TG_VALIDAR_FALTAS_HIST ON [Historicos_Escolares]
+FOR INSERT, UPDATE
+AS
+    BEGIN
+    DECLARE
+        @COD_DISC INT
+        , @TOT_CRED INT
+        , @FALTAS INT
+        , @TOTAL_AULAS INT;
+
+    SELECT @COD_DISC = COD_DISC
+        , @FALTAS = FALTAS
+        FROM inserted;
+
+    SELECT @TOT_CRED = QTD_CRED FROM Disciplinas 
+        WHERE COD_DISC = @COD_DISC;
+    
+    SET @TOTAL_AULAS = @TOT_CRED *18;
+    
+    
+
+    IF(@TOTAL_AULAS < @FALTAS)
+     
+        BEGIN
+        RAISERROR('NÃO É POSSÍVEL ESTA QUANTIDADE DE FALTAS, EXCEDE O TOTAL DE AULAS', 10 , 1 );
+            ROLLBACK;
+        END
+
+    END
+GO
+
 
 
 -- 29. Deve ser validada a consistência da situação do histórico em relação aos dados de média e
 -- faltas.
 
-CREATE TRIGGER VALIDAR_CONSISTENCIA_HISTORICO_ALU ON [Historicos_Escolares]
+CREATE TRIGGER TG_VALIDAR_CONSISTENCIA_SITUACAO ON [Historicos_Escolares]
 FOR INSERT, UPDATE
 AS
+    BEGIN
+    DECLARE
+        @COD_DISC INT
+        , @TOT_CRED INT
+        , @MEDIA NUMERIC(4,1)
+        , @SITUACAO CHAR(2)
+        , @FALTAS INT
+        , @TOTAL_AULAS INT;
+
+    SELECT @COD_DISC = COD_DISC
+        , @FALTAS = FALTAS
+        , @MEDIA = MEDIA
+        , @SITUACAO = SITUACAO
+        FROM inserted;
+
+    SELECT @TOT_CRED = QTD_CRED FROM Disciplinas 
+        WHERE COD_DISC = @COD_DISC;
     
+    SET @TOTAL_AULAS = @TOT_CRED *18;
+    
+    
+
+    IF(  (( (@TOTAL_AULAS * 0.25) < @FALTAS) OR @MEDIA < 5 ) AND @SITUACAO != 'RP')
+        BEGIN
+        RAISERROR('O ALUNO FOI REPROVADO!, MAS CONSTA COM APROVADO, NÃO É POSSÍVEL FAZER ESTE CADASTRO', 10 , 1 );
+            ROLLBACK;
+        END
+    ELSE IF(  (( (@TOTAL_AULAS * 0.25) > @FALTAS) OR @MEDIA > 5 ) AND @SITUACAO != 'AP')
+        BEGIN
+        RAISERROR('O ALUNO FOI APROVADO!, MAS CONSTA COM REPROVADO, NÃO É POSSÍVEL FAZER ESTE CADASTRO', 10 , 1 );
+            ROLLBACK;
+        END
+
+    END
 GO
+
 
 -- 30. Deve existir uma rotina para finalizar a turma, transferindo os dados da matrícula para o
 -- histórico.
+

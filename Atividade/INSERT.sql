@@ -166,9 +166,12 @@ UPDATE Tumas_Matriculadas
     WHERE MAT_ALU = 1234 -- ERROR TRIGRE
 
 UPDATE Tumas_Matriculadas
-    SET FALTAS_2 = 10
-    WHERE MAT_ALU = 1234
+    SET FALTAS_2 = 4
+    WHERE MAT_ALU = 1234 -- ERROR TRIGRE
 
+UPDATE Tumas_Matriculadas
+    SET FALTAS_2 = 10
+    WHERE MAT_ALU = 1234-- ERROR TRIGRE
 
 INSERT INTO Turmas(ANO
 , SEMESTRE
@@ -189,7 +192,9 @@ UPDATE Disciplinas SET NOM_DISC = 'mat1'
 UPDATE Alunos SET NOM_ALU = 'PEDR52' WHERE MAT_ALU = 1234;
 
 
-UPDATE Historicos_Escolares SET MEDIA = 7 WHERE MAT_ALU = 1234;
+UPDATE Historicos_Escolares SET FALTAS = 38 WHERE MAT_ALU = 1234; -- tem que gerar erro (trigger)
+
+UPDATE Historicos_Escolares SET FALTAS = 38, SITUACAO = 'RP' WHERE MAT_ALU = 1234; -- tem que gerar erro (trigger)
 
 delete Tumas_Matriculadas
 
