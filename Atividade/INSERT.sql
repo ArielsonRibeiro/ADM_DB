@@ -21,6 +21,7 @@ INSERT INTO Pre_Requisitos VALUES(3, 4);
 
 INSERT Curriculos VALUES(2, 1, 1)
 INSERT Curriculos VALUES(2, 2, 2)
+INSERT Curriculos VALUES(2, 4, 2)
 INSERT Curriculos VALUES(2, 3, 3)
 INSERT Curriculos VALUES(2, 4, 2)
 
@@ -48,7 +49,7 @@ INSERT INTO Alunos(MAT_ALU, NOM_ALU, COD_CURSO, DAT_NASC, MGP, TOT_CRED )
     VALUES (1236, 'PAULO_2',2, '12-02-2002', 0, 0)
 
 
-
+SELECT * From Historicos_Escolares
 
 INSERT Historicos_Escolares(ANO       
 , SEMESTRE
@@ -57,7 +58,7 @@ INSERT Historicos_Escolares(ANO
 , MEDIA   
 , FALTAS  
 , SITUACAO) VALUES (
-    2019, 1, 1, 1234, 5.0, 12, 'AP'
+    2019, 1, 5, 1234, 5.0, 2, 'AP'
 );
 
 INSERT Historicos_Escolares(ANO       
@@ -67,8 +68,9 @@ INSERT Historicos_Escolares(ANO
 , MEDIA   
 , FALTAS  
 , SITUACAO) VALUES (
-    2019, 1, 1, 1235, 6.0, 22, 'RP'
+    2019, 1, 5, 1235, 6.0, 2, 'AP'
 );
+
 SELECT * FROM Disciplinas
 INSERT INTO Turmas(ANO
 , SEMESTRE
@@ -145,6 +147,8 @@ INSERT INTO Tumas_Matriculadas(ANO
 , COD_DISC
 , TURMA
 , MAT_ALU) VALUES(2019, 1, 5, 'MA1', 1234) 
+
+ -- SELECT * FROM Historicos_Escolares
 INSERT INTO Tumas_Matriculadas(ANO 
 , SEMESTRE
 , COD_DISC
@@ -194,9 +198,18 @@ UPDATE Alunos SET NOM_ALU = 'PEDR52' WHERE MAT_ALU = 1234;
 
 UPDATE Historicos_Escolares SET FALTAS = 38 WHERE MAT_ALU = 1234; -- tem que gerar erro (trigger)
 
-UPDATE Historicos_Escolares SET FALTAS = 38, SITUACAO = 'RP' WHERE MAT_ALU = 1234; -- tem que gerar erro (trigger)
+UPDATE Historicos_Escolares SET FALTAS = 2, SITUACAO = 'RP' WHERE MAT_ALU = 1234; -- tem que gerar erro (trigger)
 
 delete Tumas_Matriculadas
+
+DELETE Curriculos WHERE COD_DISC = 3;
+INSERT INTO Curriculos VALUES(2, 4, 2)
+INSERT INTO Curriculos VALUES(2, 3, 3)
+
+INSERT INTO Pre_Requisitos VALUES(2, 1)
+UPDATE Pre_Requisitos
+    SET COD_DISC_PRE = 4
+    WHERE COD_DISC = 1
 
 
 

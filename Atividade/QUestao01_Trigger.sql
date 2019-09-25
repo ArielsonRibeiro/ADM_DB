@@ -23,7 +23,7 @@ BEGIN
             FROM Curriculos AS cur 
             RIGHT JOIN Disciplinas AS disc 
             ON disc.COD_DISC = cur.COD_DISC
-            WHERE CUR.COD_CURSO = (SELECT COD_CURSO FROM INSERTED))
+            WHERE CUR.COD_CURSO = @COD_CURSO)
     WHERE COD_CURSO = @COD_CURSO;
     
 END
@@ -101,26 +101,34 @@ GO
 -- 7. Uma disciplina só pode estar em uma grade curricular caso as disciplinas que formam seu pré-
 -- requisito já estejam alocadas em períodos anteriores;
 
--- CREATE TRIGGER TG_SET_UPPER_NOME_DCIS ON [Curriculos]
---     FOR INSERT, UPDATE 
--- AS
---     IF (UPDATE(COD_DISC))
---         BEGIN
---         DECLARE 
---             @COD_DISC_IN INT 
---             , @COD_CURSO_IN INT ;
---              SELECT @COD_DISC_IN = COD_DISC FROM inserted;
---              SELECT @COD_CURSO_IN  = COD_CURSO FROM inserted;
+CREATE TRIGGER TG_VERIFICAR_PRE_REQUISITOS ON [Curriculos]
+    FOR INSERT, UPDATE
+AS
+    BEGIN
+    DECLARE
+          @COD_DISC INT
+        , @COD_CURSO INT
+        , @CONT1 INT
+        , @CONT2 INT;
+        SELECT @COD_DISC = COD_DISC FROM inserted;
+        SELECT @COD_CURSO = COD_CURSO FROM inserted;
 
+        SELECT @CONT1 = COUNT(*) FROM [Pre_Requisitos] 
+            WHERE COD_DISC = @COD_DISC;
         
---         SELECT COUNT(*) FROM [Curriculos] cur
---              WHERE cur.COD_DISC =  SELECT COD_DISC_PRE
---                                          FROM SIGAA.dbo.[Pre_Requisitos] 
---                                             WHERE COD_DISC = (SELECT COD_DISC FROM inserted) AND Cur.COD_CURSO = SELECT COD_CURSO FROM inserted);
+        SELECT @CONT2 = COUNT(*) FROM Pre_Requisitos p 
+            INNER JOIN Curriculos c on c.COD_DISC = p.COD_DISC_PRE
+            WHERE p.COD_DISC = @COD_DISC AND c.COD_CURSO = @COD_CURSO;
+            
+        IF(@CONT1 != @CONT2)
+            BEGIN
+            RAISERROR('A DISCIPLINA QUE ESTÀ SENDO INSERIDO NÃO TEM OS PRÉ REQUISITOS CADASTRADO NO CURSO', 10 , 1 )
+                ROLLBACK;
+            END
 
---             --SELECT COD_DISC_PRE FROM SIGAA.dbo.[Pre_Requisitos] WHERE COD_DISC = (SELECT COD_DISC FROM inserted);
---         END
--- GO
+
+    END
+GO
 
 -- 8. A mudança dos dados de uma disciplina na grade só pode ser realizada enquanto nenhum
 -- aluno tenha cursado a disciplina ou efetuado a matrícula na mesma;
@@ -221,7 +229,47 @@ GO
 -- nenhuma inconsistência em relação aos currículos cadastrados, os históricos dos alunos e as
 -- disciplinas matriculadas.
 
-    
+CREATE TRIGGER TG_VALIDAR_PRE_REQUISITO ON [Pre_Requisitos]
+FOR INSERT, UPDATE
+AS
+    BEGIN
+        DECLARE 
+              @COD_DISC INT
+            , @COD_DISC_PRE INT;
+        SELECT @COD_DISC = COD_DISC FROM inserted;
+        SELECT @COD_DISC_PRE = COD_DISC_PRE FROM inserted;
+
+        IF EXISTS (SELECT * FROM Historicos_Escolares HE1
+                            WHERE COD_DISC = @COD_DISC AND NOT EXISTS (SELECT * FROM Historicos_Escolares HE2 
+                                                                        WHERE HE2.MAT_ALU = HE1.MAT_ALU AND HE2.COD_DISC = @COD_DISC_PRE))
+            BEGIN
+                RAISERROR('CONFLITO ENTRE O PRÉ REQUISITO E OS HISTORICOS DOS ALUNOS', 10 , 1 )
+                ROLLBACK;
+            END
+        IF EXISTS (SELECT * FROM Curriculos C1
+                            WHERE COD_DISC = @COD_DISC AND NOT EXISTS (SELECT * FROM Curriculos C2
+                                                                        WHERE C2.COD_CURSO = C1.COD_CURSO AND C2.COD_DISC = @COD_DISC_PRE))
+            BEGIN
+                RAISERROR('CONFLITO ENTRE O PRÉ REQUISITO E AS CURRICULOS DOS CURSOS', 10 , 1 )
+                ROLLBACK;
+            END
+
+        IF EXISTS (SELECT * FROM Tumas_Matriculadas T1
+                            WHERE T1.COD_DISC = @COD_DISC AND NOT EXISTS (SELECT * FROM Tumas_Matriculadas T2
+                                                                            WHERE T2.MAT_ALU = T1.MAT_ALU  
+                                                                            AND T2.ANO = T1.ANO
+                                                                            AND T2.SEMESTRE = T1.SEMESTRE
+                                                                            AND T2.COD_DISC = @COD_DISC_PRE
+                                                                            OR NOT EXISTS (SELECT * FROM Historicos_Escolares HE2 
+                                                                                WHERE HE2.MAT_ALU = T1.MAT_ALU AND HE2.COD_DISC = @COD_DISC_PRE) ) )
+            BEGIN
+                RAISERROR('CONFLITO ENTRE O PRÉ REQUISITO E AS TURMAS MATRICULADAS', 10 , 1 )
+                ROLLBACK;
+            END
+
+
+    END
+GO 
 
 
 -- 14. O total de créditos cursados e a mgp do aluno deve ser modificado automaticamente pela
@@ -417,12 +465,14 @@ AS
         BEGIN
             DECLARE
                 @N1 NUMERIC(3,1)
-                , @N2 NUMERIC(3,1);
+                , @N2 NUMERIC(3,1)
+                , @N3 NUMERIC(3,1);
 
             SELECT @N1 = NOTA_1 FROM inserted;
             SELECT @N2 = NOTA_2 FROM inserted;
+             SELECT @N3 = NOTA_3 FROM inserted;
 
-            IF ( @N1 IS NULL AND @N2 IS NULL)
+            IF ( @N1 IS NULL AND @N2 IS NULL and @N3 IS NOT NULL)
                 BEGIN
                     RAISERROR('NÃO É POSSÍVEL CADASTRAR A 3º NOTA SEM QUE PELO MENOS UMA NOTA ESTEJA CADASTRADA', 10 , 1 );
                     ROLLBACK;
@@ -439,8 +489,12 @@ FOR INSERT, UPDATE
 AS
     BEGIN
         DECLARE
-            @F INT;
-        IF(UPDATE(FALTAS_2))
+            @F INT
+            , @F2 INT
+            , @F3 INT;
+            SELECT @F2 = FALTAS_2 FROM inserted;
+            SELECT @F3 = FALTAS_3 FROM inserted;
+        IF(UPDATE(FALTAS_2) AND @F2 IS NOT NULL)
             BEGIN
                 SELECT @F = FALTAS_1 FROM inserted;
                 IF ( @F IS NULL)
@@ -449,7 +503,7 @@ AS
                         ROLLBACK;
                     END
             END
-        IF(UPDATE(FALTAS_3))
+        IF(UPDATE(FALTAS_3) AND @F3 IS NOT NULL)
             BEGIN
                 SELECT @F = FALTAS_2 FROM inserted;
                 IF ( @F IS NULL)
@@ -498,7 +552,7 @@ GO
 
 -- 24. A quarta nota só pode ser preenchida se uma das anteriores estiver nula;
 
-ALTER TRIGGER TG_PREENCHER_4_NOTA ON [Tumas_Matriculadas]
+CREATE TRIGGER TG_PREENCHER_4_NOTA ON [Tumas_Matriculadas]
 FOR INSERT, UPDATE
 AS
     IF(UPDATE(NOTA_4))
@@ -563,7 +617,7 @@ AS
     FROM inserted;
 
 
-    IF(EXISTS (SELECT * FROM [Historicos_Escolares] WHERE COD_DISC = @COD_DISC AND MAT_ALU = MAT_ALU AND SITUACAO = 'AP'))
+    IF( (SELECT COUNT(*) FROM [Historicos_Escolares] WHERE COD_DISC = @COD_DISC AND MAT_ALU = MAT_ALU AND SITUACAO = 'AP') > 1)
         BEGIN
         RAISERROR('O ALUNO JÀ CURSOU A DISCIPLINA E TEVE APROVAÇÃO, COM ISSO NÃO É POSSÍVEL CADASTRAR ESSA DISCIPLINA', 10 , 1 );
             ROLLBACK;
@@ -661,7 +715,7 @@ AS
     
     
 
-    IF(  (( (@TOTAL_AULAS * 0.25) < @FALTAS) OR @MEDIA < 5 ) AND @SITUACAO != 'RP')
+    IF(  (( (@TOTAL_AULAS * 0.25) < @FALTAS) OR @MEDIA < 5 ) AND @SITUACAO = 'AP')
         BEGIN
         RAISERROR('O ALUNO FOI REPROVADO!, MAS CONSTA COM APROVADO, NÃO É POSSÍVEL FAZER ESTE CADASTRO', 10 , 1 );
             ROLLBACK;
