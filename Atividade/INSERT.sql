@@ -126,14 +126,14 @@ INSERT INTO Tumas_Matriculadas(ANO
 , SEMESTRE
 , COD_DISC
 , TURMA
-, MAT_ALU) VALUES(2019, 1, 1, 'MA1', 1236) -- Erro Trigger Validacao de Disciplina do curso
+, MAT_ALU) VALUES(2019, 1, 1, 'MA1', 1236)
 
 
 INSERT INTO Tumas_Matriculadas(ANO 
 , SEMESTRE
 , COD_DISC
 , TURMA
-, MAT_ALU) VALUES(2019, 1, 1, 'MA1', 1236)
+, MAT_ALU) VALUES(2019, 1, 1, 'MA1', 1234) -- ERROR TIGRE VALIDACAO DISCIPLINA DO CURSO
 
 INSERT INTO Tumas_Matriculadas(ANO 
     , SEMESTRE
@@ -153,7 +153,7 @@ INSERT INTO Tumas_Matriculadas(ANO
 , SEMESTRE
 , COD_DISC
 , TURMA
-, MAT_ALU) VALUES(2019, 1, 6, 'MA1', 1234)  --eRROR tIGRES q20.
+, MAT_ALU) VALUES(2019, 1, 6, 'MA1', 1234) .
 --DELETE FROM Tumas_Matriculadas
 
 --INSERT Curriculos VALUES(2, 4, 1)
@@ -224,4 +224,5 @@ SELECT * FROM Historicos_Escolares
 SELECT * FROM Turmas
 SELECT * FROM Tumas_Matriculadas
 
+DELETE Historicos_Escolares
 USE Curso;

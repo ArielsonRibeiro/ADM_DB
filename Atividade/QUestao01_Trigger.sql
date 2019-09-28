@@ -8,7 +8,7 @@ CREATE TRIGGER TG_ALTER_GRADE_CURSO_CALCULAR_CREDITOS ON [Curriculos]
 AS
 BEGIN
     DECLARE
-    @COD_CURSO INT;
+    @COD_CURSO TINYINT;
     IF( (SELECT count(*) FROM inserted) > 0)
         BEGIN
            SELECT @COD_CURSO = COD_CURSO FROM inserted;    
@@ -64,6 +64,9 @@ AS
         END
 GO
 
+-- 4.O número máximo de créditos de um curso é 220;
+-- check;
+
 -- 5. A mudança na quantidade de créditos das disciplinas só pode ser realizada se a mesma ainda
 -- não estiver alocada à grade de um curso;
 
@@ -107,7 +110,7 @@ AS
     BEGIN
     DECLARE
           @COD_DISC INT
-        , @COD_CURSO INT
+        , @COD_CURSO TINYINT
         , @CONT1 INT
         , @CONT2 INT;
         SELECT @COD_DISC = COD_DISC FROM inserted;
@@ -177,7 +180,7 @@ AS
               @VAG_OCUP INT
             , @COD_DISC INT
             , @ANO INT
-            , @SEMESTRE INT
+            , @SEMESTRE TINYINT
             , @TURMA CHAR(3);
          
 
@@ -205,7 +208,8 @@ AS
             WHERE COD_DISC = @COD_DISC AND ANO = @ANO AND SEMESTRE = @SEMESTRE AND TURMA = @TURMA;
     END
 GO
--- 11. O total de vagas ocupadas não deve ser superior ao total de vagas disponíveis; CHECK
+-- 11. O total de vagas ocupadas não deve ser superior ao total de vagas disponíveis; 
+--CHECK
 
 -- 12. Um professor pode lecionar o máximo de 5 turmas por semestre;
 CREATE TRIGGER TG_VALIDAR_TOTAL_TURMA_PROFESSOR ON Turmas
@@ -214,7 +218,7 @@ AS
     BEGIN
         DECLARE 
               @COD_PROF INT
-            , @SEMESTRE INT;
+            , @SEMESTRE TINYINT;
             SELECT @COD_PROF = @COD_PROF FROM Turmas;
 
         IF ( (SELECT COUNT(*) FROM Turmas
@@ -283,7 +287,7 @@ AS
             , @TOT_CRED  INT
             , @MGP NUMERIC(4, 2)
             , @I INT;
-            SELECT @MAT_ALU = MAT_ALU FROM deleted;
+            SELECT @MAT_ALU = MAT_ALU FROM inserted;
 
             SELECT @TOT_CRED = SUM(d.QTD_CRED) FROM Historicos_Escolares he
                 RIGHT JOIN Disciplinas d ON d.COD_DISC = he.COD_DISC
@@ -293,12 +297,13 @@ AS
                 ,  @I = COUNT(*)
                 FROM  Historicos_Escolares he WHERE MAT_ALU = @MAT_ALU;
 
-            IF(@MGP IS NOT NULL OR @MGP != 0 )
+            IF(@MGP IS NOT NULL AND @MGP != 0 )
                 SELECT @MGP = @MGP/@I;
             ELSE
                 SET @MGP = 0  
             IF(@TOT_CRED IS NULL )
                 SET @TOT_CRED = 0 ;  
+
             UPDATE Alunos
                 SET TOT_CRED = @TOT_CRED
                     , MGP = @MGP
@@ -366,7 +371,7 @@ FOR INSERT
 AS
     BEGIN
     DECLARE
-        @COD_DISC INT
+         @COD_DISC INT
         , @MAT_ALU INT;
     SELECT @COD_DISC = COD_DISC
             , @MAT_ALU = MAT_ALU
@@ -390,10 +395,10 @@ FOR INSERT
 AS
     BEGIN
     DECLARE
-        @COD_DISC INT
+         @COD_DISC INT
         , @MAT_ALU INT
-        , @CURSO_DISC INT
-        , @CURSO_ALU INT;
+        , @CURSO_DISC TINYINT
+        , @CURSO_ALU TINYINT;
     SELECT @COD_DISC = COD_DISC
             , @MAT_ALU = MAT_ALU
     FROM inserted;
@@ -419,12 +424,12 @@ FOR INSERT
 AS
     BEGIN
     DECLARE
-        @COD_DISC INT
-        , @PERIODO INT
+         @COD_DISC INT
+        , @PERIODO TINYINT
         , @MAT_ALU INT
         , @ANO INT
         , @SEMESTRE INT
-        , @COD_CURSO INT
+        , @COD_CURSO TINYINT
         , @QTD_CRED_MAIOR_PER INT
         , @QTD_CRED_MAT INT;
     SELECT @COD_DISC = COD_DISC, @MAT_ALU = MAT_ALU, @ANO = ANO, @SEMESTRE = SEMESTRE FROM inserted;
@@ -634,8 +639,8 @@ AS
     DECLARE
         @COD_DISC INT
         , @MAT_ALU INT
-        , @CURSO_DISC INT
-        , @CURSO_ALU INT;
+        , @CURSO_DISC TINYINT
+        , @CURSO_ALU TINYINT;
     SELECT @COD_DISC = COD_DISC
             , @MAT_ALU = MAT_ALU
     FROM inserted;
