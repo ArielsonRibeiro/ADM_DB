@@ -40,3 +40,6 @@ BEGIN
     WHERE DATA = @DATA
 END
 GO
+
+if (@@ROWCOUNT = 0)
+	return;

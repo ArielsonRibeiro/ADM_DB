@@ -293,9 +293,11 @@ AS
                 RIGHT JOIN Disciplinas d ON d.COD_DISC = he.COD_DISC
                 WHERE he.MAT_ALU = @MAT_ALU AND he.SITUACAO = 'AP';
 
-            SELECT @MGP = SUM(he.MEDIA)
-                ,  @I = COUNT(*)
-                FROM  Historicos_Escolares he WHERE MAT_ALU = @MAT_ALU;
+            SELECT @MGP = SUM(he.MEDIA * di.QTD_CRED )
+                ,  @I = COUNT(di.QTD_CRED)
+                FROM  Historicos_Escolares he
+                INNER JOIN Disciplinas di on di.COD_DISC = he.COD_DISC
+                 WHERE MAT_ALU = @MAT_ALU;
 
             IF(@MGP IS NOT NULL AND @MGP != 0 )
                 SELECT @MGP = @MGP/@I;
@@ -790,7 +792,7 @@ AS
         SET @COUNT_QTD_AV +=1;
     IF(@N4 IS NOT NULL)
         SET @COUNT_QTD_AV +=1;
-    PRINT @COUNT_QTD_AV
+    --PRINT @COUNT_QTD_AV
 
     IF(@FALTAS_1 IS NOT NULL AND @FALTAS_2 IS NOT NULL  AND @FALTAS_3 IS NOT NULL AND @COUNT_QTD_AV > 2)
         BEGIN
