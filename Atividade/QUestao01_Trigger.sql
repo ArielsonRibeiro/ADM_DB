@@ -692,6 +692,7 @@ GO
 
 
 
+
 -- 29. Deve ser validada a consistência da situação do histórico em relação aos dados de média e
 -- faltas.
 
@@ -699,37 +700,41 @@ CREATE TRIGGER TG_VALIDAR_CONSISTENCIA_SITUACAO ON [Historicos_Escolares]
 FOR INSERT, UPDATE
 AS
     BEGIN
-    DECLARE
-        @COD_DISC INT
-        , @TOT_CRED INT
-        , @MEDIA NUMERIC(4,1)
-        , @SITUACAO CHAR(2)
-        , @FALTAS INT
-        , @TOTAL_AULAS INT;
+        DECLARE
+            @COD_DISC INT
+            , @TOT_CRED INT
+            , @MEDIA NUMERIC(4,1)
+            , @SITUACAO CHAR(2)
+            , @FALTAS INT
+            , @TOTAL_AULAS INT;
 
-    SELECT @COD_DISC = COD_DISC
-        , @FALTAS = FALTAS
-        , @MEDIA = MEDIA
-        , @SITUACAO = SITUACAO
-        FROM inserted;
+        SELECT @COD_DISC = COD_DISC
+            , @FALTAS = FALTAS
+            , @MEDIA = MEDIA
+            , @SITUACAO = SITUACAO
+            FROM inserted;
 
-    SELECT @TOT_CRED = QTD_CRED FROM Disciplinas 
-        WHERE COD_DISC = @COD_DISC;
-    
-    SET @TOTAL_AULAS = @TOT_CRED *18;
-    
-    
-
-    IF(  (( (@TOTAL_AULAS * 0.25) < @FALTAS) OR @MEDIA < 5 ) AND @SITUACAO = 'AP')
-        BEGIN
-        RAISERROR('O ALUNO FOI REPROVADO!, MAS CONSTA COM APROVADO, NÃO É POSSÍVEL FAZER ESTE CADASTRO', 10 , 1 );
-            ROLLBACK;
-        END
-    ELSE IF(  (( (@TOTAL_AULAS * 0.25) > @FALTAS) OR @MEDIA > 5 ) AND @SITUACAO != 'AP')
-        BEGIN
-        RAISERROR('O ALUNO FOI APROVADO!, MAS CONSTA COM REPROVADO, NÃO É POSSÍVEL FAZER ESTE CADASTRO', 10 , 1 );
-            ROLLBACK;
-        END
+        SELECT @TOT_CRED = QTD_CRED FROM Disciplinas 
+            WHERE COD_DISC = @COD_DISC;
+        
+        SET @TOTAL_AULAS = @TOT_CRED *18;
+        
+        
+        IF(  (( (@TOTAL_AULAS * 0.25) > @FALTAS) OR @MEDIA >= 5 ) AND @SITUACAO != 'AP')
+            BEGIN
+            RAISERROR('O ALUNO FOI APROVADO!, MAS CONSTA REPROVADO, NÃO É POSSÍVEL FAZER ESTE CADASTRO', 10 , 1 );
+                ROLLBACK;
+            END
+        ELSE IF(  ( @MEDIA < 5 ) AND @SITUACAO IN ('AP', 'RF')  )
+            BEGIN
+                RAISERROR('O ALUNO FOI REPROVADO POR MÉDIA!, MAS A SITUCÃO NAO CONSTA ESTE CASO', 10 , 1 );
+                ROLLBACK;
+            END
+        ELSE IF(  ( (@TOTAL_AULAS * 0.25) < @FALTAS)  AND @SITUACAO IN ('AP', 'RM')  )
+            BEGIN
+                RAISERROR('O ALUNO FOI REPROVADO POR FALTA!, MAS A SITUCÃO NAO CONSTA ESTE CASO', 10 , 1 );
+                ROLLBACK;
+            END
 
     END
 GO
@@ -738,3 +743,89 @@ GO
 -- 30. Deve existir uma rotina para finalizar a turma, transferindo os dados da matrícula para o
 -- histórico.
 
+CREATE TRIGGER TG_FINALIZAR_TURMA ON [Tumas_Matriculadas]
+FOR INSERT, UPDATE
+AS
+    BEGIN
+    DECLARE
+        @COD_DISC INT
+        , @ANO INT
+        , @MAT_ALU INT
+        , @SEMESTRE TINYINT
+        , @TOT_CRED INT
+        , @FALTAS_1 INT
+        , @FALTAS_2 INT
+        , @FALTAS_3 INT
+        , @N1 NUMERIC(3,1)
+        , @N2 NUMERIC(3,1)
+        , @N3 NUMERIC(3,1)
+        , @N4 NUMERIC(3,1)
+        , @TOTAL_FALTAS INT
+        , @MEDIA NUMERIC(4, 1)
+        , @SITUACAO CHAR(2)
+        , @TOTAL_AULAS INT
+        , @COUNT_QTD_AV INT;
+
+    
+    
+    SELECT @COD_DISC = COD_DISC
+        , @ANO = ANO
+        , @SEMESTRE = SEMESTRE
+        , @MAT_ALU = MAT_ALU 
+        , @FALTAS_1 = FALTAS_1
+        , @FALTAS_2 = FALTAS_2
+        , @FALTAS_3 = FALTAS_3
+        , @N1 = NOTA_1
+        , @N2 = NOTA_2
+        , @N3 = NOTA_3
+        , @N4 = NOTA_4
+        FROM inserted;
+
+    SET @COUNT_QTD_AV = 0;
+    IF(@N1 IS NOT NULL)
+        SET @COUNT_QTD_AV += 1;
+    IF(@N2 IS NOT NULL)
+        SET @COUNT_QTD_AV +=1;
+    IF(@N3 IS NOT NULL)
+        SET @COUNT_QTD_AV +=1;
+    IF(@N4 IS NOT NULL)
+        SET @COUNT_QTD_AV +=1;
+    PRINT @COUNT_QTD_AV
+
+    IF(@FALTAS_1 IS NOT NULL AND @FALTAS_2 IS NOT NULL  AND @FALTAS_3 IS NOT NULL AND @COUNT_QTD_AV > 2)
+        BEGIN
+            SET @TOTAL_FALTAS = @FALTAS_1+@FALTAS_2+@FALTAS_3;
+            SET @MEDIA = (ISNULL(@N1, 0) + ISNULL(@N2, 0) + ISNULL(@N3, 0) + ISNULL(@N4, 0))/3;
+
+            SELECT @TOT_CRED = QTD_CRED FROM Disciplinas 
+                WHERE COD_DISC = @COD_DISC;
+
+            SET @TOTAL_AULAS = @TOT_CRED *18;
+
+            IF(@MEDIA < 5)
+                BEGIN
+                    SET @SITUACAO = 'RM';
+                END
+            ELSE IF( (@TOTAL_AULAS * 0.25) < @TOTAL_FALTAS)
+                BEGIN
+                    SET @SITUACAO = 'RF';
+                END
+            ELSE
+                BEGIN
+                    SET @SITUACAO = 'AP';
+                END
+
+            INSERT Historicos_Escolares(ANO       
+                , SEMESTRE
+                , COD_DISC
+                , MAT_ALU 
+                , MEDIA   
+                , FALTAS  
+                , SITUACAO) VALUES (
+                    @ANO, @SEMESTRE,@COD_DISC, @MAT_ALU, @MEDIA, @TOTAL_FALTAS, @SITUACAO
+                );
+            
+            END
+    END
+   
+GO

@@ -23,7 +23,7 @@ AS
             , @NOM_ALU  
             )   
     END
-GO;
+GO
     
 -- EXECUTE dbo.INSERIR_ALUNO
 --     112
@@ -211,8 +211,8 @@ AS
 GO
 
 CREATE PROCEDURE DBO.INSERIR_PRE_REQUISITO_DISCIPLINA
-      @COD_DISC       INT NOT NULL
-    , @COD_DISC_PRE INT NOT NULL
+      @COD_DISC       INT 
+    , @COD_DISC_PRE INT 
 AS
     BEGIN
         INSERT INTO Pre_Requisitos(
