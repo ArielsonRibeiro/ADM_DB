@@ -8,7 +8,7 @@ CREATE TRIGGER TG_ALTER_GRADE_CURSO_CALCULAR_CREDITOS ON [Curriculos]
 AS
 BEGIN
     DECLARE
-    @COD_CURSO TINYINT;
+    @COD_CURSO SMALLINT;
     IF( (SELECT count(*) FROM inserted) > 0)
         BEGIN
            SELECT @COD_CURSO = COD_CURSO FROM inserted;    
@@ -110,7 +110,7 @@ AS
     BEGIN
     DECLARE
           @COD_DISC INT
-        , @COD_CURSO TINYINT
+        , @COD_CURSO SMALLINT
         , @CONT1 INT
         , @CONT2 INT;
         SELECT @COD_DISC = COD_DISC FROM inserted;
@@ -172,7 +172,7 @@ GO
 -- 10. As vagas ocupadas da turma (vag_ocup) deve ser atualizada como efeito das mudanças nas
 -- turmas matriculadas de cada aluno;
 -- DUVIDA A PERGUNTAR AO PROFESSO
-CREATE TRIGGER TG_ATUALIZAR_VAGAS_TURMA ON [Tumas_Matriculadas]
+ALTER TRIGGER TG_ATUALIZAR_VAGAS_TURMA ON [Tumas_Matriculadas]
 FOR INSERT, DELETE
 AS
     BEGIN
@@ -180,7 +180,7 @@ AS
               @VAG_OCUP INT
             , @COD_DISC INT
             , @ANO INT
-            , @SEMESTRE TINYINT
+            , @SEMESTRE SMALLINT
             , @TURMA CHAR(3);
          
 
@@ -190,7 +190,7 @@ AS
                 SELECT @ANO = ANO FROM inserted;
                 SELECT @SEMESTRE = SEMESTRE FROM inserted;
                 SELECT @TURMA = TURMA FROM inserted;
-                SELECT @VAG_OCUP = VAG_OCUP FROM SIGAA.dbo.Turmas WHERE COD_DISC = @COD_DISC;
+                SELECT @VAG_OCUP = VAG_OCUP FROM SIGAA.dbo.Turmas WHERE COD_DISC = @COD_DISC AND ANO = @ANO AND SEMESTRE = @SEMESTRE AND TURMA = @TURMA;
                 SELECT @VAG_OCUP = @VAG_OCUP+1;
             END
         ELSE
@@ -199,7 +199,7 @@ AS
                 SELECT @ANO = ANO FROM deleted;
                 SELECT @SEMESTRE = SEMESTRE FROM deleted;
                 SELECT @TURMA = TURMA FROM deleted;
-                SELECT @VAG_OCUP = VAG_OCUP FROM SIGAA.dbo.Turmas WHERE COD_DISC = @COD_DISC;
+                SELECT @VAG_OCUP = VAG_OCUP FROM SIGAA.dbo.Turmas WHERE COD_DISC = @COD_DISC AND ANO = @ANO AND SEMESTRE = @SEMESTRE AND TURMA = @TURMA;
                 SELECT @VAG_OCUP = @VAG_OCUP - 1;
             END
 
@@ -218,7 +218,7 @@ AS
     BEGIN
         DECLARE 
               @COD_PROF INT
-            , @SEMESTRE TINYINT;
+            , @SEMESTRE SMALLINT;
             SELECT @COD_PROF = @COD_PROF FROM Turmas;
 
         IF ( (SELECT COUNT(*) FROM Turmas
@@ -382,7 +382,7 @@ AS
 
     IF(EXISTS (SELECT * FROM [Historicos_Escolares] WHERE COD_DISC = @COD_DISC AND MAT_ALU = MAT_ALU AND SITUACAO = 'AP'))
         BEGIN
-        RAISERROR('O ALUNO JÀ CURSOU A DISCIPLINA', 10 , 1 );
+            RAISERROR('O ALUNO JÀ CURSOU A DISCIPLINA', 10 , 1 );
             ROLLBACK;
         END
 
@@ -399,8 +399,8 @@ AS
     DECLARE
          @COD_DISC INT
         , @MAT_ALU INT
-        , @CURSO_DISC TINYINT
-        , @CURSO_ALU TINYINT;
+        , @CURSO_DISC SMALLINT
+        , @CURSO_ALU SMALLINT;
     SELECT @COD_DISC = COD_DISC
             , @MAT_ALU = MAT_ALU
     FROM inserted;
@@ -411,7 +411,7 @@ AS
 
     IF(@CURSO_ALU != @CURSO_DISC)
         BEGIN
-        RAISERROR('ESTÁ DISCIPLINA NÂO PERTENCE AO CURRICULO DO CURSO DO ALUNO!', 10 , 1 );
+            RAISERROR('ESTÁ DISCIPLINA NÂO PERTENCE AO CURRICULO DO CURSO DO ALUNO!', 10 , 1 );
             ROLLBACK;
         END
 
@@ -427,11 +427,11 @@ AS
     BEGIN
     DECLARE
          @COD_DISC INT
-        , @PERIODO TINYINT
+        , @PERIODO SMALLINT
         , @MAT_ALU INT
         , @ANO INT
         , @SEMESTRE INT
-        , @COD_CURSO TINYINT
+        , @COD_CURSO SMALLINT
         , @QTD_CRED_MAIOR_PER INT
         , @QTD_CRED_MAT INT;
     SELECT @COD_DISC = COD_DISC, @MAT_ALU = MAT_ALU, @ANO = ANO, @SEMESTRE = SEMESTRE FROM inserted;
@@ -477,7 +477,7 @@ AS
 
             SELECT @N1 = NOTA_1 FROM inserted;
             SELECT @N2 = NOTA_2 FROM inserted;
-             SELECT @N3 = NOTA_3 FROM inserted;
+            SELECT @N3 = NOTA_3 FROM inserted;
 
             IF ( @N1 IS NULL AND @N2 IS NULL and @N3 IS NOT NULL)
                 BEGIN
@@ -604,7 +604,7 @@ AS
 
     IF  (@CONT1 != @CONT2)
         BEGIN
-            RAISERROR('O ALUNO NÃO POSSUI OS PRÉ-REQUISITOS SUFICIENTE PARA CADASTRAR ESSE DISCIPLINA NO HISTÓRICO', 10 , 1 );
+             RAISERROR ('O ALUNO NÃO POSSUI OS PRÉ-REQUISITOS SUFICIENTE PARA CADASTRAR ESSE DISCIPLINA NO HISTÓRICO', 10 , 1 );
             ROLLBACK;
         END
     END
@@ -641,8 +641,8 @@ AS
     DECLARE
         @COD_DISC INT
         , @MAT_ALU INT
-        , @CURSO_DISC TINYINT
-        , @CURSO_ALU TINYINT;
+        , @CURSO_DISC SMALLINT
+        , @CURSO_ALU SMALLINT;
     SELECT @COD_DISC = COD_DISC
             , @MAT_ALU = MAT_ALU
     FROM inserted;
@@ -672,7 +672,7 @@ AS
         , @TOTAL_AULAS INT;
 
     SELECT @COD_DISC = COD_DISC
-        , @FALTAS = FALTAS
+        ,  @FALTAS = FALTAS
         FROM inserted;
 
     SELECT @TOT_CRED = QTD_CRED FROM Disciplinas 
@@ -753,7 +753,7 @@ AS
         @COD_DISC INT
         , @ANO INT
         , @MAT_ALU INT
-        , @SEMESTRE TINYINT
+        , @SEMESTRE SMALLINT
         , @TOT_CRED INT
         , @FALTAS_1 INT
         , @FALTAS_2 INT
