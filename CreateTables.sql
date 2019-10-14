@@ -32,7 +32,7 @@ GO
 
 PRINT '~> Criando tabela Curso...';
 CREATE TABLE Curso (
-	  cod_curso SMALLINT    NOT NULL CHECK (cod_curso > 0 AND LEN(cod_curso) = 2)
+	  cod_curso TINYINT    NOT NULL CHECK (cod_curso > 0 AND LEN(cod_curso) = 2)
 	, tot_cred  SMALLINT    NOT NULL CHECK (tot_cred >= 0 AND LEN(tot_cred) <= 220)
 	, nom_curso VARCHAR(60) NOT NULL
 	, cod_coord SMALLINT	         CHECK (cod_coord > 0 AND LEN(cod_coord) = 4)
@@ -43,7 +43,7 @@ GO
 PRINT '~> Criando tabela Professor...';
 CREATE TABLE Professor (
 	  cod_prof  SMALLINT    NOT NULL CHECK (cod_prof > 0 AND LEN(cod_prof) = 4)
-	, cod_curso SMALLINT    NOT NULL CHECK (cod_curso > 0 AND LEN(cod_curso) = 2)
+	, cod_curso TINYINT    NOT NULL CHECK (cod_curso > 0 AND LEN(cod_curso) = 2)
 	, nom_prof  VARCHAR(60) NOT NULL
 	, CONSTRAINT professor_pk PRIMARY KEY (cod_prof)
 	, CONSTRAINT professor_curso_fk FOREIGN KEY (cod_curso)
@@ -59,7 +59,7 @@ GO
 PRINT '~> Criando tabela Aluno...';
 CREATE TABLE Aluno (
       mat_alu   INT           NOT NULL CHECK (mat_alu > 0 AND LEN(mat_alu) = 6)
-    , cod_curso SMALLINT      NOT NULL CHECK (cod_curso > 0 AND LEN(cod_curso) = 2)
+    , cod_curso TINYINT      NOT NULL CHECK (cod_curso > 0 AND LEN(cod_curso) = 2)
     , dat_nasc  SMALLDATETIME NOT NULL
     , tot_cred  SMALLINT      NOT NULL CHECK (tot_cred >= 0 AND LEN(tot_cred) <= 3)
     , mgp       NUMERIC(4, 2) NOT NULL CHECK (mgp >= 0.0)
@@ -90,7 +90,7 @@ GO
 
 PRINT '~> Criando tabela Curriculo...';
 CREATE TABLE Curriculo (
-      cod_curso SMALLINT NOT NULL CHECK (cod_curso > 0 AND LEN(cod_curso) = 2)
+      cod_curso TINYINT NOT NULL CHECK (cod_curso > 0 AND LEN(cod_curso) = 2)
     , cod_disc  INT      NOT NULL CHECK (cod_disc > 0 AND LEN(cod_disc) = 6)
     , periodo   SMALLINT NOT NULL CHECK (periodo > 0 AND LEN(periodo) <= 2)
     , CONSTRAINT curriculo_pk PRIMARY KEY (cod_curso, cod_disc)
