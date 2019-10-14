@@ -1,3 +1,7 @@
+--
+-- author: Vanilton Alves dos Santos Filho 
+-- vanilton.filho96@academico.ifs.edu.br - 2019
+-- 
 CREATE TRIGGER tg_regra04 ON Curriculo
 FOR INSERT, UPDATE
 AS
