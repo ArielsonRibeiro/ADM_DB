@@ -2,7 +2,7 @@
 -- Vanilton Alves dos Santos Filho - 2019.2
 -- vanilton.filho96@academico.ifs.edu.br
 --
-CREATE TRIGGER tg_regra25 ON TurmaMatriculada
+CREATE TRIGGER tg_regra17 ON TurmaMatriculada
 FOR INSERT, UPDATE
 AS
 BEGIN
