@@ -1,6 +1,6 @@
 CREATE PROCEDURE DBO.INSERIR_ALUNO
       @MAT_ALU   INT           
-    , @COD_CURSO TINYINT       
+    , @COD_CURSO SMALLINT       
     , @DAT_NASC  DATE          
     , @TOT_CRED  INT           
     , @MGP       NUMERIC(4, 2) 
@@ -36,7 +36,7 @@ GO
 
 CREATE PROCEDURE DBO.MODIFICAR_ALUNO
       @MAT_ALU   INT           
-    , @COD_CURSO TINYINT       
+    , @COD_CURSO SMALLINT       
     , @DAT_NASC  DATE          
     , @TOT_CRED  INT           
     , @MGP       NUMERIC(4, 2)
@@ -77,9 +77,9 @@ GO
 -- GO
 
 CREATE PROCEDURE DBO.INSERIR_CURRICULO
-      @COD_CURSO  TINYINT 
+      @COD_CURSO  SMALLINT 
     , @COD_DISC   INT     
-    , @PERIODO    TINYINT 
+    , @PERIODO    SMALLINT 
 AS
     BEGIN
         INSERT INTO Curriculos(
@@ -95,9 +95,9 @@ AS
 GO
 
 CREATE PROCEDURE DBO.MODIFICAR_CURRICULO
-      @COD_CURSO  TINYINT 
+      @COD_CURSO  SMALLINT 
     , @COD_DISC   INT     
-    , @PERIODO    TINYINT 
+    , @PERIODO    SMALLINT 
 AS
     BEGIN
         UPDATE Curriculos
@@ -110,7 +110,7 @@ AS
 GO
 
 CREATE PROCEDURE DBO.EXCLUIR_CURRICULO
-      @COD_CURSO  TINYINT 
+      @COD_CURSO  SMALLINT 
     , @COD_DISC   INT     
 AS
     BEGIN
@@ -119,7 +119,7 @@ AS
 GO
 
 CREATE PROCEDURE DBO.INSERIR_CURSO
-      @COD_CURSO TINYINT     
+      @COD_CURSO SMALLINT     
     , @TOT_CRED  INT         
     , @NOM_CURSO VARCHAR(60) 
     , @COD_COORD INT
@@ -140,7 +140,7 @@ AS
 GO  
 
 CREATE PROCEDURE DBO.MODIFICAR_CURSO
-      @COD_CURSO TINYINT     
+      @COD_CURSO SMALLINT     
     , @TOT_CRED  INT         
     , @NOM_CURSO VARCHAR(60) 
     , @COD_COORD INT
@@ -157,7 +157,7 @@ AS
 GO  
 
 CREATE PROCEDURE DBO.EXCLUIR_CURSO
-      @COD_CURSO TINYINT     
+      @COD_CURSO SMALLINT     
     , @TOT_CRED  INT         
     , @NOM_CURSO VARCHAR(60) 
     , @COD_COORD INT
@@ -170,7 +170,7 @@ GO
 
 CREATE PROCEDURE DBO.INSERIR_DISCIPLINA
       @COD_DISC   INT         
-    , @QTD_CRED   TINYINT     
+    , @QTD_CRED   SMALLINT     
     , @NOM_DISC   VARCHAR(60) 
 AS
     BEGIN
@@ -188,7 +188,7 @@ GO
 
 CREATE PROCEDURE DBO.MODIFICAR_DISCIPLINA
       @COD_DISC   INT         
-    , @QTD_CRED   TINYINT     
+    , @QTD_CRED   SMALLINT     
     , @NOM_DISC   VARCHAR(60) 
 AS
     BEGIN
@@ -252,7 +252,7 @@ GO
 
 CREATE PROCEDURE DBO.INSERIR_HISTORICO_ESCOLAR
       @ANO      INT          
-    , @SEMESTRE TINYINT      
+    , @SEMESTRE SMALLINT      
     , @COD_DISC INT          
     , @MAT_ALU  INT          
     , @MEDIA    NUMERIC(4,2) 
@@ -282,7 +282,7 @@ GO
 
 CREATE PROCEDURE DBO.MODIFICAR_HISTORICO_ESCOLAR
       @ANO      INT          
-    , @SEMESTRE TINYINT      
+    , @SEMESTRE SMALLINT      
     , @COD_DISC INT          
     , @MAT_ALU  INT          
     , @MEDIA    NUMERIC(4,2) 
@@ -309,7 +309,7 @@ GO
 
 CREATE PROCEDURE DBO.EXCLUIR_HISTORICO_ESCOLAR
       @ANO      INT          
-    , @SEMESTRE TINYINT      
+    , @SEMESTRE SMALLINT      
     , @COD_DISC INT          
     , @MAT_ALU  INT
 AS
@@ -324,7 +324,7 @@ GO
 
 CREATE PROCEDURE DBO.INSERIR_PROFESSOR
       @COD_PROF    INT        
-    , @COD_CURSO TINYINT    
+    , @COD_CURSO SMALLINT    
     , @NOM_PROF  VARCHAR(60)
 AS
     BEGIN
@@ -342,7 +342,7 @@ GO
 
 CREATE PROCEDURE DBO.MODIFICAR_PROFESSOR
       @COD_PROF    INT        
-    , @COD_CURSO TINYINT    
+    , @COD_CURSO SMALLINT    
     , @NOM_PROF  VARCHAR(60)
 AS
     BEGIN
@@ -357,7 +357,7 @@ GO
 
 CREATE PROCEDURE DBO.EXCLUIR_PROFESSOR
       @COD_PROF    INT        
-    , @COD_CURSO TINYINT    
+    , @COD_CURSO SMALLINT    
     , @NOM_PROF  VARCHAR(60)
 AS
     BEGIN
@@ -368,7 +368,7 @@ GO
 
 CREATE PROCEDURE DBO.INSERIR_TURMA_MATRICULADA
       @ANO       INT            
-    , @SEMESTRE  TINYINT        
+    , @SEMESTRE  SMALLINT        
     , @COD_DISC  INT            
     , @TURMA     CHAR(3)        
     , @MAT_ALU   INT            
@@ -413,7 +413,7 @@ GO
 
 CREATE PROCEDURE DBO.MODIFICAR_TURMA_MATRICULADA
       @ANO       INT            
-    , @SEMESTRE  TINYINT        
+    , @SEMESTRE  SMALLINT        
     , @COD_DISC  INT            
     , @TURMA     CHAR(3)        
     , @MAT_ALU   INT            
@@ -450,7 +450,7 @@ GO
 
 CREATE PROCEDURE DBO.EXCLUIR_TURMA_MATRICULADA
       @ANO       INT            
-    , @SEMESTRE  TINYINT        
+    , @SEMESTRE  SMALLINT        
     , @COD_DISC  INT            
     , @TURMA     CHAR(3)        
     , @MAT_ALU   INT
@@ -468,7 +468,7 @@ GO
 
 CREATE PROCEDURE DBO.INSERIR_TURMA
       @ANO       INT    
-    , @SEMESTRE  TINYINT
+    , @SEMESTRE  SMALLINT
     , @COD_DISC  INT    
     , @TURMA     CHAR(3)
     , @TOT_VAGAS INT    
@@ -498,7 +498,7 @@ GO
 
 CREATE PROCEDURE DBO.MODIFICAR_TURMA
       @ANO       INT    
-    , @SEMESTRE  TINYINT
+    , @SEMESTRE  SMALLINT
     , @COD_DISC  INT    
     , @TURMA     CHAR(3)
     , @TOT_VAGAS INT    
@@ -525,7 +525,7 @@ GO
 
 CREATE PROCEDURE DBO.EXCLUIR_TURMA
       @ANO       INT    
-    , @SEMESTRE  TINYINT
+    , @SEMESTRE  SMALLINT
     , @COD_DISC  INT    
     , @TURMA     CHAR(3)
 AS
