@@ -1,0 +1,43 @@
+-- 20. O limite máximo de créditos matriculados em um mesmo período é dado pelo período de
+-- maior quantidade de créditos do curso;
+CREATE TRIGGER TG_VALIDAR_QTD_MAXIMA_CREDITO ON [TurmaMatriculada]
+FOR INSERT
+AS
+    BEGIN
+    IF @@ROWCOUNT = 0
+        RETURN; 
+    DECLARE
+         @COD_DISC INT
+        , @PERIODO SMALLINT
+        , @MAT_ALU INT
+        , @ANO INT
+        , @SEMESTRE INT
+        , @COD_CURSO SMALLINT
+        , @QTD_CRED_MAIOR_PER INT
+        , @QTD_CRED_MAT INT;
+    SELECT @COD_DISC = COD_DISC, @MAT_ALU = MAT_ALU, @ANO = ANO, @SEMESTRE = SEMESTRE FROM inserted;
+
+    SELECT @PERIODO = PERIODO, @COD_CURSO = COD_CURSO FROM Curriculo WHERE COD_DISC = @COD_DISC;
+
+    -- SELECT @QTD_CRED_MAIOR_PER = SUM(D.QTD_CRED) FROM Curriculo C
+    --     INNER JOIN Disciplina D ON D.COD_DISC = C.COD_DISC
+    --     WHERE (C.PERIODO = @PERIODO AND C.COD_CURSO = @COD_CURSO);
+    
+    SELECT TOP 1 @QTD_CRED_MAIOR_PER = SUM(D.QTD_CRED) FROM Disciplina D
+    INNER JOIN Curriculo C ON C.COD_DISC = D.COD_DISC
+    WHERE C.COD_CURSO = @COD_CURSO
+    GROUP BY C.PERIODO
+    ORDER BY 1 DESC;
+
+    SELECT @QTD_CRED_MAT = SUM(D.QTD_CRED) FROM TurmaMatriculada TM
+        INNER JOIN Disciplina D ON D.COD_DISC =  TM.COD_DISC
+        WHERE MAT_ALU = @MAT_ALU AND ANO = @ANO AND SEMESTRE = @SEMESTRE;
+    
+    IF(@QTD_CRED_MAIOR_PER < @QTD_CRED_MAT)
+        BEGIN
+        RAISERROR('O ALUNO NÃO PODE SE MATRICULAR NESSA DISCIPLINA, POIS EXCEDE O NÚMERO MAXIMO DE CRÉDITO DE UM MESMO PERÍODO!', 10 , 1 );
+            ROLLBACK;
+        END
+
+    END
+GO
